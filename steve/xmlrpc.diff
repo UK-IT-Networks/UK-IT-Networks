@@ -1,0 +1,83 @@
+--- D:/Web/xmlrpc/lib/xmlrpc.3.0.0.beta.inc	Sa Sep  5 23:33:18 2009
++++ D:/Web/xmlrpc/lib/xmlrpc.inc	Mo Sep 27 14:15:45 2010
+@@ -50,6 +50,7 @@
+ 	// Milosch: 2005/08/07 - explicitly request these via $GLOBALS where used.
+ 	$GLOBALS['xmlrpcI4']='i4';
+ 	$GLOBALS['xmlrpcInt']='int';
++	$GLOBALS['xmlrpcI8']='i8';
+ 	$GLOBALS['xmlrpcBoolean']='boolean';
+ 	$GLOBALS['xmlrpcDouble']='double';
+ 	$GLOBALS['xmlrpcString']='string';
+@@ -62,6 +63,7 @@
+ 	$GLOBALS['xmlrpcTypes']=array(
+ 		$GLOBALS['xmlrpcI4']       => 1,
+ 		$GLOBALS['xmlrpcInt']      => 1,
++		$GLOBALS['xmlrpcI8']       => 1,
+ 		$GLOBALS['xmlrpcBoolean']  => 1,
+ 		$GLOBALS['xmlrpcString']   => 1,
+ 		$GLOBALS['xmlrpcDouble']   => 1,
+@@ -76,6 +78,7 @@
+ 		'BOOLEAN' => array('VALUE'),
+ 		'I4' => array('VALUE'),
+ 		'INT' => array('VALUE'),
++		'I8' => array('VALUE'),
+ 		'STRING' => array('VALUE'),
+ 		'DOUBLE' => array('VALUE'),
+ 		'DATETIME.ISO8601' => array('VALUE'),
+@@ -434,6 +437,7 @@
+ 					break;
+ 				case 'I4':
+ 				case 'INT':
++				case 'I8':
+ 				case 'STRING':
+ 				case 'BOOLEAN':
+ 				case 'DOUBLE':
+@@ -601,6 +605,7 @@
+ 				case 'BOOLEAN':
+ 				case 'I4':
+ 				case 'INT':
++				case 'I8':
+ 				case 'STRING':
+ 				case 'DOUBLE':
+ 				case 'DATETIME.ISO8601':
+@@ -663,6 +668,22 @@
+ 							$GLOBALS['_xh']['value']=(double)$GLOBALS['_xh']['ac'];
+ 						}
+ 					}
++					elseif ($name=='I8')
++					{
++						// we have a I8
++						// we must check that only 0123456789-<space> are characters here
++						if (!preg_match('/^[+-]?[0123456789 \t]+$/', $GLOBALS['_xh']['ac']))
++						{
++							/// @todo: find a better way of throwing an error than this!
++							error_log('XML-RPC: non numeric value received in I8: '.$GLOBALS['_xh']['ac']);
++							$GLOBALS['_xh']['value']='ERROR_NON_NUMERIC_FOUND';
++						}
++						else
++						{
++							// it's ok, add it on
++							$GLOBALS['_xh']['value']=(double)$GLOBALS['_xh']['ac'];
++						}
++					}
+ 					else
+ 					{
+ 						// we have an I4/INT
+@@ -2729,6 +2750,7 @@
+ 						break;
+ 					case 'i4':
+ 					case 'int':
++					case 'i8':
+ 					case 'double':
+ 					case 'string':
+ 					case 'boolean':
+@@ -2946,6 +2968,9 @@
+ 						case $GLOBALS['xmlrpcI4']:
+ 							$rs.="<${typ}>".(int)$val."</${typ}>";
+ 							break;
++						case $GLOBALS['xmlrpcI8']:
++							$rs.="<${typ}>".(double)$val."</${typ}>";
++							break;
+ 						case $GLOBALS['xmlrpcDouble']:
+ 							// avoid using standard conversion of float to string because it is locale-dependent,
+ 							// and also because the xmlrpc spec forbids exponential notation.
